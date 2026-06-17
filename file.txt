@@ -1,0 +1,176 @@
+Prompt 1: 
+In `@templates/base.html`, add two hyperlinks or buttons whichever suits better in the footer section:
+
+* "Terms and Conditions"
+* "Privacy Policy"
+
+Both links should temporarily point to `#` since the actual pages are not available yet.
+
+Styling requirements:
+
+* Adjust the styling so the links blend naturally with the existing footer design.
+* Ensure proper spacing, alignment, hover effect, and responsive appearance.
+* Keep the styling clean and minimal.
+* Match the current typography/colors/theme of the footer.
+
+Important:
+
+* Do not modify any other section of the file.
+* Do not change existing functionality or layout outside the footer.
+* Only add the required links and their related styling adjustments.
+
+My prefrence is they should be not in one line.
+
+
+Prompt 2:
+Create a new Terms and Conditions page for Spendly, a personal expense tracker web application.
+
+Requirements:
+
+1. Add a new route in `app.py`
+
+   * Method: `GET`
+   * Route: `/terms`
+   * Render: `templates/terms.html`
+
+2. Create a new file: `templates/terms.html`
+
+   * Add a clean and professional Terms and Conditions page suitable for a personal expense tracker webapp.
+   * Include the following sections:
+
+     * Acceptance of Terms
+     * Usage of Service
+     * User Data & Privacy
+     * Account Responsibilities
+     * Limitation of Liability
+     * Changes to Terms
+     * Contact Information
+   * The content should be generic, concise, and production-ready.
+   * If `base.html` exists, extend it and follow the existing layout/components.
+   * Otherwise, match the styling and theme of `landing.html`.
+   * Ensure the page is responsive and visually consistent with the rest of the application.
+
+3. Update the existing "Terms and Conditions" footer hyperlink
+
+   * Change href from `"#"` to `"/terms"`
+
+Constraints:
+
+* Do not modify unrelated files or functionality.
+* Keep styling consistent with the current application theme.
+* Do not change existing routes or layouts unless required for this implementation.
+ 
+
+Prompt 3:
+Create a new Privacy Policy page for Spendly, a personal expense tracker web application.
+
+Requirements:
+
+1. Add a new route in `app.py`
+
+   * Method: `GET`
+   * Route: `/privacy`
+   * Render: `templates/privacy.html`
+
+2. Create a new file: `templates/privacy.html`
+
+   * Add a clean and professional Privacy Policy page suitable for a personal expense tracker webapp.
+   * Include the following sections:
+
+     * Introduction
+     * Data We Collect
+     * How We Use Your Data
+     * Data Storage & Security
+     * Third-Party Services
+     * Cookies & Analytics
+     * User Rights
+     * Contact Us
+   * The content should be generic, concise, and production-ready.
+   * Match the styling, structure, and overall theme of `templates/terms.html`.
+   * If `base.html` is used by `terms.html`, extend the same layout here as well.
+   * Ensure the page is responsive and visually consistent with the rest of the application.
+
+3. Update the existing "Privacy Policy" footer hyperlink
+
+   * Change href from `"#"` to `"/privacy"`
+
+Constraints:
+
+* Do not modify unrelated files or existing functionality.
+* Keep styling and layout consistent with the current application design.
+* Do not change existing routes or templates unless required for this implementation.
+
+
+
+
+Prompt 4:
+Refer to the design and redesign only the Hero section of the landing page.
+
+Files allowed to modify:
+
+* `@templates/landing.html`
+* `@static/css/landing.css`
+
+Requirements:
+
+* Match the overall layout, spacing, typography, visual hierarchy, and modern aesthetic from the reference screenshot as closely as possible.
+* Update only the Hero section content and styling.
+* Ensure the Hero section is fully responsive across desktop, tablet, and mobile devices.
+* Maintain clean semantic HTML structure and organized CSS.
+* Reuse existing classes/styles where appropriate instead of creating unnecessary duplicates.
+* Keep animations, gradients, buttons, and spacing visually polished and modern if present in the reference design.
+
+Important Constraints:
+
+* Do not modify any other section of the landing page.
+* Do not change navbar, footer, features, pricing, scripts, routes, or backend logic.
+* Do not touch any other file outside:
+
+  * `@templates/landing.html`
+  * `@static/css/landing.css`
+* Preserve existing functionality outside the Hero section.
+
+
+Prompt 5:
+Add a modal to `@templates/landing.html` that opens when the user clicks the `"See how it works"` button.
+
+Requirements:
+
+* Clicking `"See how it works"` should open a centered overlay modal.
+* The modal should contain an embedded YouTube video (use any placeholder/demo YouTube video for now).
+* The video must be fully playable inside the modal.
+* Add a visible close button inside the modal.
+* Clicking either:
+
+  * the close button, OR
+  * outside the modal content area (overlay background)
+
+  should close the modal.
+
+Video Behavior:
+
+* When the modal closes, the video must stop playing completely and should not continue running in the background.
+* Implement proper iframe reset or source cleanup to stop playback.
+
+Technical Constraints:
+
+* Use only plain Vanilla JavaScript.
+* Do not use jQuery, Bootstrap JS, React, Vue, or any external modal/video libraries.
+* Keep HTML, CSS, and JS clean, modular, and maintainable.
+* Ensure the modal is responsive and works properly on mobile devices.
+
+Files Allowed:
+
+* `@templates/landing.html`
+* Existing landing page CSS/JS files if required.
+
+Important:
+
+* Do not modify any other part of the project.
+* Do not alter existing layouts, routes, backend logic, or unrelated UI sections.
+* Preserve all existing functionality outside this modal feature.
+
+
+
+Generate Database Plan Prompt.
+Read @01-database.md and existing @databases/db.py and @app.py, then generate implementation plan. Save this plan to @.claude/plans/01-database-setup.md
