@@ -13,28 +13,33 @@
         </div>
 
         <div class="auth-card">
-            {% if error %}
-            <div class="auth-error">{{ error }}</div>
-            {% endif %}
+            <div id="global-error" class="auth-error" style="display:none;"></div>
 
-            <form method="POST" action="/register">
+            <form id="register-form">
                 <div class="form-group">
                     <label for="name">Full name</label>
                     <input type="text" id="name" name="name"
                            class="form-input" placeholder="Nitish Kumar"
-                           required autofocus>
+                           autofocus>
+                    <div id="error-name" class="auth-error" style="display:none;"></div>
                 </div>
                 <div class="form-group">
                     <label for="email">Email address</label>
                     <input type="email" id="email" name="email"
-                           class="form-input" placeholder="nitish@example.com"
-                           required>
+                           class="form-input" placeholder="nitish@example.com">
+                    <div id="error-email" class="auth-error" style="display:none;"></div>
                 </div>
                 <div class="form-group">
                     <label for="password">Password</label>
                     <input type="password" id="password" name="password"
-                           class="form-input" placeholder="Min. 8 characters"
-                           required>
+                           class="form-input" placeholder="Min. 6 characters">
+                    <div id="error-password" class="auth-error" style="display:none;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="confirm_password">Confirm password</label>
+                    <input type="password" id="confirm_password" name="confirm_password"
+                           class="form-input" placeholder="Re-enter your password">
+                    <div id="error-confirm_password" class="auth-error" style="display:none;"></div>
                 </div>
                 <button type="submit" class="btn-submit">Create account</button>
             </form>
@@ -48,4 +53,91 @@
     </div>
 </section>
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById('register-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        clearErrors();
+
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+
+        const clientErrors = {};
+        if (!name) {
+            clientErrors['name'] = 'Name is required';
+        } else if (name.length > 100) {
+            clientErrors['name'] = 'Name must be 100 characters or fewer';
+        }
+        if (!email) {
+            clientErrors['email'] = 'Email is required';
+        } else if (!email.includes('@')) {
+            clientErrors['email'] = 'Enter a valid email address';
+        }
+        if (!password) {
+            clientErrors['password'] = 'Password is required';
+        } else if (password.length < 6) {
+            clientErrors['password'] = 'Password must be at least 6 characters';
+        }
+        if (!confirmPassword) {
+            clientErrors['confirm_password'] = 'Please confirm your password';
+        } else if (password && confirmPassword !== password) {
+            clientErrors['confirm_password'] = 'Passwords do not match';
+        }
+
+        if (Object.keys(clientErrors).length > 0) {
+            showErrors(clientErrors);
+            return;
+        }
+
+        const payload = { name, email, password, confirm_password: confirmPassword };
+
+        try {
+            const res = await fetch('/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            const json = await res.json();
+
+            if (res.ok) {
+                window.location.href = '{{ url_for("login") }}';
+            } else if (json.errors) {
+                showErrors(json.errors);
+            } else {
+                showGlobalError(json.error || 'Something went wrong. Please try again.');
+            }
+        } catch {
+            showGlobalError('Network error. Please try again.');
+        }
+    });
+
+    function clearErrors() {
+        document.querySelectorAll('.auth-error').forEach(function (el) {
+            el.style.display = 'none';
+            el.textContent = '';
+        });
+    }
+
+    function showErrors(errors) {
+        Object.keys(errors).forEach(function (field) {
+            var el = document.getElementById('error-' + field);
+            if (el) {
+                el.textContent = errors[field];
+                el.style.display = 'block';
+            } else {
+                showGlobalError(errors[field]);
+            }
+        });
+    }
+
+    function showGlobalError(msg) {
+        var el = document.getElementById('global-error');
+        el.textContent = msg;
+        el.style.display = 'block';
+    }
+</script>
 {% endblock %}
