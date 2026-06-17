@@ -94,6 +94,7 @@ Specific constraints Claude must follow. Always include:
 - Passwords hashed with werkzeug
 - Use CSS variables — never hardcode hex values
 - All templates extend `base.html`
+- All authentication/authorization should be with JWT token, no cookie or session based login-logout on Server side.  
 
 ## Definition of done
 A specific testable checklist. Each item must be
