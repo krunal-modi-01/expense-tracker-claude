@@ -1,10 +1,12 @@
 import sqlite3
-from flask import Flask, render_template, request, jsonify
-from werkzeug.security import generate_password_hash
-from database.db import get_db, init_db, seed_db, create_user
+import time
+from flask import Flask, render_template, request, jsonify, redirect, url_for
+from werkzeug.security import generate_password_hash, check_password_hash
+from database.db import get_db, init_db, seed_db, create_user, get_user_by_email
+from database.auth import sign_jwt
 
 app = Flask(__name__)
-app.secret_key = "dev-secret-key"
+app.secret_key = "dev-secret-key-spendly-change-in-production"
 
 
 def _validate_registration(data):
@@ -38,6 +40,19 @@ def _validate_registration(data):
     elif password and confirm != password:
         errors["confirm_password"] = "Passwords do not match"
 
+    return errors
+
+
+def _validate_login(data):
+    errors = {}
+    email = (data.get("email") or "").strip()
+    password = data.get("password") or ""
+    if not email:
+        errors["email"] = "Email is required"
+    elif "@" not in email:
+        errors["email"] = "Enter a valid email address"
+    if not password:
+        errors["password"] = "Password is required"
     return errors
 
 
@@ -75,9 +90,37 @@ def register():
     return jsonify({"success": True, "message": "Account created successfully"}), 201
 
 
-@app.route("/login")
+@app.route("/login", methods=["GET", "POST"])
 def login():
-    return render_template("login.html")
+    if request.method == "GET":
+        return render_template("login.html")
+
+    if not request.is_json:
+        return jsonify({"error": "Content-Type must be application/json"}), 415
+
+    data = request.get_json(silent=True) or {}
+    errors = _validate_login(data)
+    if errors:
+        return jsonify({"errors": errors}), 400
+
+    user = get_user_by_email(data["email"].strip())
+    if not user or not check_password_hash(user["password_hash"], data["password"]):
+        return jsonify({"error": "Invalid email or password"}), 401
+
+    payload = {
+        "sub": str(user["id"]),
+        "name": user["name"],
+        "email": user["email"],
+        "iat": int(time.time()),
+    }
+    token = sign_jwt(payload, app.secret_key)
+    return jsonify({
+        "success": True,
+        "data": {
+            "token": token,
+            "user": {"id": user["id"], "name": user["name"], "email": user["email"]},
+        },
+    }), 200
 
 
 @app.route("/terms")
@@ -96,7 +139,7 @@ def privacy():
 
 @app.route("/logout")
 def logout():
-    return "Logout — coming in Step 3"
+    return redirect(url_for("landing"))
 
 
 @app.route("/profile")

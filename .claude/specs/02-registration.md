@@ -128,7 +128,7 @@ No new files.
 
 ## New dependencies
 
-No new dependencies.
+- `PyJWT==2.13.0` — JWT signing and verification for the login step. Added to `requirements.txt`.
 
 ## Rules for implementation
 
