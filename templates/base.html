@@ -43,5 +43,24 @@
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     {% block scripts %}{% endblock %}
+    <script>
+        (function () {
+            function signOut() {
+                localStorage.removeItem('spendly_token');
+                window.location.href = '/';
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                var token = localStorage.getItem('spendly_token');
+                var navLinks = document.querySelector('.nav-links');
+                if (token && navLinks) {
+                    navLinks.innerHTML =
+                        '<a href="#" onclick="signOut(); return false;">Sign out</a>';
+                }
+            });
+
+            window.signOut = signOut;
+        })();
+    </script>
 </body>
 </html>
