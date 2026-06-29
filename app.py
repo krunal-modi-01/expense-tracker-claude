@@ -2,11 +2,21 @@ import sqlite3
 import time
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
-from database.db import get_db, init_db, seed_db, create_user, get_user_by_email
-from database.auth import sign_jwt
+from database.db import get_db, init_db, seed_db, create_user, get_user_by_email, get_user_by_id, get_expense_summary
+from database.auth import sign_jwt, decode_jwt
 
 app = Flask(__name__)
 app.secret_key = "dev-secret-key-spendly-change-in-production"
+
+
+def _get_jwt_payload():
+    auth = request.headers.get("Authorization", "")
+    if not auth.startswith("Bearer "):
+        return None, "Authentication required"
+    try:
+        return decode_jwt(auth[7:], app.secret_key), None
+    except ValueError:
+        return None, "Invalid or expired token"
 
 
 def _validate_registration(data):
@@ -144,7 +154,39 @@ def logout():
 
 @app.route("/profile")
 def profile():
-    return "Profile page — coming in Step 4"
+    return render_template("profile.html")
+
+
+@app.route("/api/profile")
+def api_profile():
+    payload, err = _get_jwt_payload()
+    if err:
+        return jsonify({"error": err}), 401
+
+    user_id = int(payload["sub"])
+    user = get_user_by_id(user_id)
+    if not user:
+        return jsonify({"error": "Authentication required"}), 401
+
+    summary = get_expense_summary(user_id)
+    member_since = (user["created_at"] or "")[:10]
+
+    return jsonify({
+        "success": True,
+        "data": {
+            "user": {
+                "id": user["id"],
+                "name": user["name"],
+                "email": user["email"],
+                "member_since": member_since,
+            },
+            "stats": {
+                "total_expenses": summary["total_count"],
+                "total_amount": summary["total_amount"],
+                "by_category": summary["by_category"],
+            },
+        },
+    }), 200
 
 
 @app.route("/expenses/add")
