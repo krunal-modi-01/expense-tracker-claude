@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Profile — Spendly{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<section class="profile-section">
+
+    <div id="profile-loading" class="profile-loading">Loading your profile…</div>
+    <div id="profile-error" class="profile-error" style="display:none;"></div>
+
+    <div id="profile-content" style="display:none;">
+
+        <div class="profile-header">
+            <p class="profile-eyebrow">Your account</p>
+            <h1 class="profile-name" id="profile-name"></h1>
+            <p class="profile-email" id="profile-email"></p>
+            <p class="profile-since">Member since <span id="profile-since"></span></p>
+        </div>
+
+        <div class="profile-body">
+
+            <div class="profile-stats">
+                <div class="profile-stat-card">
+                    <span class="profile-stat-label">Expenses logged</span>
+                    <span class="profile-stat-value" id="stat-count"></span>
+                </div>
+                <div class="profile-stat-card">
+                    <span class="profile-stat-label">Total spent</span>
+                    <span class="profile-stat-value" id="stat-amount"></span>
+                </div>
+            </div>
+
+            <div class="profile-categories">
+                <h2 class="profile-section-title">Spending by category</h2>
+                <div id="profile-cat-bars"></div>
+                <p id="profile-no-expenses" class="profile-empty" style="display:none;">
+                    No expenses logged yet.
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    var CATEGORY_COLORS = [
+        'var(--accent)',
+        'var(--accent-2)',
+        '#3b82f6',
+        '#6366f1',
+        '#8b5e83',
+        '#5b7fa6',
+    ];
+
+    function formatRupee(amount) {
+        return '₹' + Number(amount).toLocaleString('en-IN', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        });
+    }
+
+    function buildCatBars(cats) {
+        var container = document.getElementById('profile-cat-bars');
+        var noExp = document.getElementById('profile-no-expenses');
+
+        if (!cats || cats.length === 0) {
+            noExp.style.display = 'block';
+            return;
+        }
+
+        var max = cats[0].total;
+        cats.forEach(function (cat, i) {
+            var pct = max > 0 ? (cat.total / max * 100).toFixed(1) : 0;
+            var color = CATEGORY_COLORS[i % CATEGORY_COLORS.length];
+
+            var row = document.createElement('div');
+            row.className = 'profile-cat-row';
+
+            var name = document.createElement('span');
+            name.className = 'profile-cat-name';
+            name.textContent = cat.category;
+
+            var track = document.createElement('div');
+            track.className = 'profile-cat-track';
+
+            var fill = document.createElement('div');
+            fill.className = 'profile-cat-fill';
+            fill.style.width = '0%';
+            fill.style.backgroundColor = color;
+            track.appendChild(fill);
+
+            var amount = document.createElement('span');
+            amount.className = 'profile-cat-amount';
+            amount.textContent = formatRupee(cat.total);
+
+            row.appendChild(name);
+            row.appendChild(track);
+            row.appendChild(amount);
+            container.appendChild(row);
+
+            requestAnimationFrame(function () {
+                fill.style.width = pct + '%';
+            });
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var token = localStorage.getItem('spendly_token');
+        if (!token) {
+            window.location.href = '{{ url_for("login") }}';
+            return;
+        }
+
+        fetch('/api/profile', {
+            headers: { 'Authorization': 'Bearer ' + token },
+        })
+        .then(function (res) {
+            if (res.status === 401) {
+                localStorage.removeItem('spendly_token');
+                window.location.href = '{{ url_for("login") }}';
+                return null;
+            }
+            return res.json();
+        })
+        .then(function (json) {
+            if (!json) return;
+
+            if (!json.success) {
+                showError(json.error || 'Failed to load profile.');
+                return;
+            }
+
+            var user = json.data.user;
+            var stats = json.data.stats;
+
+            document.getElementById('profile-name').textContent = user.name;
+            document.getElementById('profile-email').textContent = user.email;
+            document.getElementById('profile-since').textContent = user.member_since || '—';
+            document.getElementById('stat-count').textContent = stats.total_expenses;
+            document.getElementById('stat-amount').textContent = formatRupee(stats.total_amount);
+
+            buildCatBars(stats.by_category);
+
+            document.getElementById('profile-loading').style.display = 'none';
+            document.getElementById('profile-content').style.display = 'block';
+        })
+        .catch(function () {
+            showError('Could not load profile. Please try again.');
+        });
+    });
+
+    function showError(msg) {
+        document.getElementById('profile-loading').style.display = 'none';
+        var el = document.getElementById('profile-error');
+        el.textContent = msg;
+        el.style.display = 'block';
+    }
+</script>
+{% endblock %}

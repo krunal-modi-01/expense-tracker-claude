@@ -55,6 +55,7 @@
                 var navLinks = document.querySelector('.nav-links');
                 if (token && navLinks) {
                     navLinks.innerHTML =
+                        '<a href="{{ url_for("profile") }}">Profile</a>' +
                         '<a href="#" onclick="signOut(); return false;">Sign out</a>';
                 }
             });
